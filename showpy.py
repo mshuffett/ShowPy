@@ -16,9 +16,26 @@ class BaseController(controller.CementBaseController):
     def default(self):
         app.args.print_help()
 
-    @controller.expose(aliases=['ls'], help='Prints show list.')
+    @controller.expose(aliases=['ls', 'l'], help='Print the show list.')
     def list(self):
         print self.shows
+
+    @controller.expose(help='Show help.')
+    def help(self):
+        app.args.print_help()
+
+
+class AddShowController(controller.CementBaseController):
+    class Meta(object):
+        aliases = ['add', 'a']
+        label = 'add_show'
+        description = 'Add a show to the collection'
+        stacked_on = 'base'
+        stacked_type = 'nested'
+        arguments = [
+            (['show'], dict(nargs='+')),
+            ]
+
 
 class ShowPy(foundation.CementApp):
     class Meta(object):
@@ -27,6 +44,7 @@ class ShowPy(foundation.CementApp):
 
 
 app = ShowPy()
+handler.register(AddShowController)
 
 def main():
     db = Db.instance()
