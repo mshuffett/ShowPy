@@ -66,7 +66,7 @@ class ModelMixin(object):
         db.session.add(self)
         db.session.commit()
 
-    def saveMultiple(self, objects = []):
+    def save_multiple(self, objects = []):
         db = Db.instance()
         db.session.add_all(objects)
         db.session.commit()
@@ -80,9 +80,16 @@ class ModelMixin(object):
         db.session.delete(self)
         db.session.commit()
 
-    def queryObject(self):
+    def query_object(self):
         db = Db.instance()
         return db.session.query(self.__class__)
 
+    def all(self):
+        return self.queryObject().all()
+
+
 class Show(ModelMixin, Base):
     title = Column(String, primary_key=True)
+
+    def __repr__(self):
+        return "<Show(title='%s')>" % self.title

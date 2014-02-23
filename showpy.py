@@ -1,31 +1,9 @@
-import sqlite3
+# import sqlite3
 from cement.core import backend, foundation, controller, handler
 
 from database import Db, Show
 
-class Shows(object):
-    _TABLE_NAME = 'shows'
-    def __init__(self):
-        self._conn = sqlite3.connect('showpy.db')
-        self.create_table_if_doesnt_exist()
 
-    def create_table_if_doesnt_exist(self):
-        with self._conn:
-            self._conn.execute('CREATE TABLE if not exists %s (title)' % self._TABLE_NAME)
-
-    def list(self):
-        with self._conn:
-            return self._conn.execute('SELECT * from shows').fetchall()
-
-    def add_show(self, title):
-        with self._conn:
-            self._conn.execute('INSERT INTO shows VALUES (?)', (title,))
-
-    def __str__(self):
-        return 'Show 1, Show 2'
-
-
-# define an application base controller
 class BaseController(controller.CementBaseController):
     class Meta(object):
         label = 'base'
