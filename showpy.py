@@ -9,11 +9,8 @@ class BaseController(controller.CementBaseController):
         label = 'base'
         description = 'ShowPy manages your shows.'
 
-        config_defaults = {'shows': Shows()}
-
     def _setup(self, base_app):
         super(BaseController, self)._setup(base_app)
-        self.shows = Shows()
 
     @controller.expose(hide=True)
     def default(self):
@@ -29,9 +26,10 @@ class ShowPy(foundation.CementApp):
         base_controller = BaseController
 
 
+app = ShowPy()
+
 def main():
     db = Db.instance()
-    app = ShowPy()
     try:
         app.setup()
         app.run()
