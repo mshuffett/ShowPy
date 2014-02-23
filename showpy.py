@@ -1,11 +1,29 @@
+import sqlite3
 from cement.core import backend, foundation, controller, handler
 
+from database import Db, Show
+
 class Shows(object):
+    _TABLE_NAME = 'shows'
+    def __init__(self):
+        self._conn = sqlite3.connect('showpy.db')
+        self.create_table_if_doesnt_exist()
+
+    def create_table_if_doesnt_exist(self):
+        with self._conn:
+            self._conn.execute('CREATE TABLE if not exists %s (title)' % self._TABLE_NAME)
+
     def list(self):
-        return ['show1', 'show2']
+        with self._conn:
+            return self._conn.execute('SELECT * from shows').fetchall()
+
+    def add_show(self, title):
+        with self._conn:
+            self._conn.execute('INSERT INTO shows VALUES (?)', (title,))
 
     def __str__(self):
         return 'Show 1, Show 2'
+
 
 # define an application base controller
 class BaseController(controller.CementBaseController):
@@ -19,7 +37,7 @@ class BaseController(controller.CementBaseController):
         super(BaseController, self)._setup(base_app)
         self.shows = Shows()
 
-    @controller.expose(hide=True, aliases=['run'])
+    @controller.expose(hide=True)
     def default(self):
         app.args.print_help()
 
@@ -32,15 +50,17 @@ class ShowPy(foundation.CementApp):
         label = 'showpy'
         base_controller = BaseController
 
-# create the app
-app = ShowPy()
 
-try:
-    # setup the application
-    app.setup()
+def main():
+    db = Db.instance()
+    app = ShowPy()
+    try:
+        app.setup()
+        app.run()
+    finally:
+        # close the app
+        app.close()
 
-    # run the application
-    app.run()
-finally:
-    # close the app
-    app.close()
+
+if __name__ == '__main__':
+    main()
