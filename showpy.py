@@ -45,7 +45,6 @@ add_parser.set_defaults(func=list_shows)
 
 
 def main():
-    db = Db()
     args = parser.parse_args()
     args.func(args)
 

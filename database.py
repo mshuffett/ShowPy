@@ -5,36 +5,12 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm import sessionmaker
 import datetime
 
-
-Base = declarative_base()
-
-
-class _Singleton(type):
-    _instances = {}
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(_Singleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
-
-class Singleton(_Singleton('SingletonMeta', (object,), {})): pass
-
-
-class Db(Singleton):
-    '''
-    The DB Class should only exits once, thats why it has the @Singleton decorator.
-    To Create an instance you have to use the instance method:
-        db = Db.instance()
-    '''
-    engine = None
-    session = None
-
-    def __init__(self):
-        print 'this should only be called once'
-        self.engine = create_engine('sqlite:///showpy.db', echo=True)
-        Session = sessionmaker(bind=self.engine)
-        self.session = Session()
-        ## Create all Tables
-        Base.metadata.create_all(self.engine)
+_Base = declarative_base()
+_engine = create_engine('sqlite:///showpy.db', echo=True)
+## Create all Tables
+_Base.metadata.create_all(_engine)
+_Session = sessionmaker(bind=_engine)
+session = _Session()
 
 
 class ModelMixin(object):
@@ -48,49 +24,43 @@ class ModelMixin(object):
         return cls.__name__.lower()
 
     def save(self):
-        db = Db.instance()
-        db.session.add(self)
-        db.session.commit()
+        session.add(self)
+        session.commit()
 
     @staticmethod
     def save_multiple(objects):
-        db = Db.instance()
-        db.session.add_all(objects)
-        db.session.commit()
+        session.add_all(objects)
+        session.commit()
 
     def update(self):
-        db = Db.instance()
-        db.session.commit()
+        session.commit()
 
     def delete(self):
-        db = Db.instance()
-        db.session.delete(self)
-        db.session.commit()
+        session.delete(self)
+        session.commit()
 
     @classmethod
     def delete(cls):
-        db = Db.instance()
-        db.session.query(cls).delete()
-        db.session.commit()
+        session.query(cls).delete()
+        session.commit()
 
     @classmethod
     def query(cls):
-        db = Db.instance()
-        return db.session.query(cls)
+        return session.query(cls)
 
     @classmethod
     def all(cls):
         return cls.query().all()
 
 
-class Show(ModelMixin, Base):
+class Show(ModelMixin, _Base):
     title = Column(String, primary_key=True)
 
     def __repr__(self):
         return "<Show(title='%s')>" % self.title
 
 
-class Setting(ModelMixin, Base):
+class Setting(ModelMixin, _Base):
     key = Column(String, primary_key=True)
     value = Column(String, primary_key=True)
 
