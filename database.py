@@ -66,7 +66,8 @@ class ModelMixin(object):
         db.session.add(self)
         db.session.commit()
 
-    def save_multiple(self, objects = []):
+    @staticmethod
+    def save_multiple(objects):
         db = Db.instance()
         db.session.add_all(objects)
         db.session.commit()
@@ -80,12 +81,20 @@ class ModelMixin(object):
         db.session.delete(self)
         db.session.commit()
 
-    def query_object(self):
+    @classmethod
+    def delete(cls):
         db = Db.instance()
-        return db.session.query(self.__class__)
+        db.session.query(cls).delete()
+        db.session.commit()
 
-    def all(self):
-        return self.queryObject().all()
+    @classmethod
+    def query(cls):
+        db = Db.instance()
+        return db.session.query(cls)
+
+    @classmethod
+    def all(cls):
+        return cls.query().all()
 
 
 class Show(ModelMixin, Base):
