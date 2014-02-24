@@ -1,8 +1,6 @@
 import argparse
 
-from database import Db, Show
-
-
+from database import Show
 
 
 parser = argparse.ArgumentParser(description='ShowPy manages your shows.', prog='ShowPy')
@@ -27,7 +25,9 @@ class _Command(type):
         print dct
         super(_Command, cls).__init__(name, bases, dct)
 
-class Command(_Command('CommandMeta', (object,), {})): pass
+class Command(_Command('CommandMeta', (object,), {})):
+    def run(self):
+        print 'hmm'
 
 def add_show(args):
     Show.save_multiple(Show(title=title) for title in args.title)
@@ -35,6 +35,15 @@ def add_show(args):
 add_parser = commands.add_parser('add', help='Add show to collection.')
 add_parser.add_argument('title', nargs='+')
 add_parser.set_defaults(func=add_show)
+
+
+class AddShowCommand(Command):
+    name = 'add'
+    help = 'Add show to collection'
+    arguments = [('title', {'nargs': '+'})]
+
+    def run(self):
+        self.run()
 
 
 def list_shows(args):
