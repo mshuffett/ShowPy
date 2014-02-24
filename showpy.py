@@ -11,6 +11,24 @@ commands = parser.add_subparsers(title='Commands', metavar='')
 commands.add_parser('help', help='Show help for command.')
 
 
+class _Command(type):
+    def __new__(meta, name, bases, dct):
+        print '-----------------------------------'
+        print "Allocating memory for class", name
+        print meta
+        print bases
+        print dct
+        return super(_Command, meta).__new__(meta, name, bases, dct)
+    def __init__(cls, name, bases, dct):
+        print '-----------------------------------'
+        print "Initializing class", name
+        print cls
+        print bases
+        print dct
+        super(_Command, cls).__init__(name, bases, dct)
+
+class Command(_Command('CommandMeta', (object,), {})): pass
+
 def add_show(args):
     Show.save_multiple(Show(title=title) for title in args.title)
 
@@ -26,6 +44,11 @@ add_parser = commands.add_parser('list', help='List all shows in collection.')
 add_parser.set_defaults(func=list_shows)
 
 
-db = Db.instance()
-args = parser.parse_args()
-args.func(args)
+def main():
+    db = Db()
+    args = parser.parse_args()
+    args.func(args)
+
+
+if __name__ == '__main__':
+    main()

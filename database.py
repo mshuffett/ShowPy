@@ -9,26 +9,17 @@ import datetime
 Base = declarative_base()
 
 
-class Singleton(object):
-    '''
-    Singelton class
-    '''
-    def __init__(self, decorated):
-        self._decorated = decorated
+class _Singleton(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(_Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
 
-    def instance(self, *args, **kwargs):
-        try:
-            return self._instance
-        except AttributeError:
-            self._instance = self._decorated(*args, **kwargs)
-            return self._instance
-
-    def __call__(self, *args, **kwargs):
-        raise TypeError('Singletons must be accessed through the `Instance` method.')
+class Singleton(_Singleton('SingletonMeta', (object,), {})): pass
 
 
-@Singleton
-class Db(object):
+class Db(Singleton):
     '''
     The DB Class should only exits once, thats why it has the @Singleton decorator.
     To Create an instance you have to use the instance method:
@@ -38,17 +29,12 @@ class Db(object):
     session = None
 
     def __init__(self):
+        print 'this should only be called once'
         self.engine = create_engine('sqlite:///showpy.db', echo=True)
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
         ## Create all Tables
         Base.metadata.create_all(self.engine)
-
-    def instance(self, *args, **kwargs): 
-        '''
-        Dummy method, cause several IDEs can not handel singeltons in Python
-        '''
-        pass
 
 
 class ModelMixin(object):
@@ -102,3 +88,11 @@ class Show(ModelMixin, Base):
 
     def __repr__(self):
         return "<Show(title='%s')>" % self.title
+
+
+class Setting(ModelMixin, Base):
+    key = Column(String, primary_key=True)
+    value = Column(String, primary_key=True)
+
+    def __repr__(self):
+        return "<Setting(key='%s', value='%s')>" % (self.key, self.value)
